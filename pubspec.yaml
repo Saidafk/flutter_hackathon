@@ -37,7 +37,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   qr_code_scanner: ^1.0.1
   http: ^1.2.2
-  vcf_dart: ^1.0.2
+  
 
 dev_dependencies:
   flutter_test:

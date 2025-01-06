@@ -237,14 +237,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
-  vcf_dart:
-    dependency: "direct main"
-    description:
-      name: vcf_dart
-      sha256: "971c143ce2e2029bd8cf0544f82a718408587ba304be70e85a02998a2b4c13a1"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.2"
   vector_math:
     dependency: transitive
     description:
