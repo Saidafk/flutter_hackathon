@@ -20,6 +20,7 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
       );
     }
 
+
     return Text(
       value.displayValue ?? 'No display value.',
       overflow: TextOverflow.fade,

@@ -17,6 +17,8 @@ class ScannerErrorWidget extends StatelessWidget {
         errorMessage = 'Permission denied';
       case MobileScannerErrorCode.unsupported:
         errorMessage = 'Scanning is unsupported on this device';
+        case MobileScannerErrorCode.vcard:
+        errorMessage = 'Not vcard';
       default:
         errorMessage = 'Generic Error';
         break;

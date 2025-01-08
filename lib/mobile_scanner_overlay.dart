@@ -17,6 +17,34 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
     formats: const [BarcodeFormat.qrCode],
   );
 
+  String scanResult = ''; // Pour stocker le résultat du scan
+
+  bool _isVCard(String? code) {
+    // Vérifie si le code commence par BEGIN:VCARD
+    return code != null && code.startsWith('BEGIN:VCARD');
+  }
+
+  void _showResultDialog(String message) {
+    // Affiche un message dans une boîte de dialogue
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Résultat du scan"),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: Text("OK"),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final scanWindow = Rect.fromCenter(
@@ -28,7 +56,8 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
     return Scaffold(
       backgroundColor: Colors.black,
       appBar: AppBar(
-        title: const Text('Scanner with Overlay Example app'),
+        title: const Text('Scanner avec Overlay'),
+        
       ),
       body: Stack(
         fit: StackFit.expand,
@@ -50,21 +79,23 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
                   ),
                 );
               },
+              onDetect: (BarcodeCapture capture) {
+                final List<Barcode> barcodes = capture.barcodes;
+                for (final barcode in barcodes) {
+                  final String? code = barcode.rawValue;
+                  if (_isVCard(code)) {
+                    // Si c'est une vCard, affiche son contenu
+                    setState(() {
+                      scanResult = code ?? "Aucune valeur";
+                    });
+                    _showResultDialog("vCard scannée : $scanResult");
+                  } else {
+                    // Si ce n'est pas une vCard, affiche un message d'erreur
+                    _showResultDialog("Erreur : Ce n'est pas une vCard.");
+                  }
+                }
+              },
             ),
-          ),
-          ValueListenableBuilder(
-            valueListenable: controller,
-            builder: (context, value, child) {
-              if (!value.isInitialized ||
-                  !value.isRunning ||
-                  value.error != null) {
-                return const SizedBox();
-              }
-
-              return CustomPaint(
-                painter: ScannerOverlay(scanWindow: scanWindow),
-              );
-            },
           ),
           Align(
             alignment: Alignment.bottomCenter,
