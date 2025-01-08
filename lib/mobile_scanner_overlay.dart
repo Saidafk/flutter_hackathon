@@ -51,6 +51,7 @@ class _BarcodeScannerWithOverlayState extends State<BarcodeScannerWithOverlay> {
       center: MediaQuery.sizeOf(context).center(Offset.zero),
       width: 200,
       height: 200,
+      
     );
 
     return Scaffold(
