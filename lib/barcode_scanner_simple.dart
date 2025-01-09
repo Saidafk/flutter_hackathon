@@ -100,36 +100,34 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        title: const Text('Scanner'),
+      appBar: AppBar(title: const Text('Scanner'),
         backgroundColor: Colors.blueAccent,
       ),
       backgroundColor: Colors.black,
       body: Stack(
         children: [
-          if (!_hasScanned)
-            MobileScanner(
-              onDetect: (BarcodeCapture capture) {
-                if (_hasScanned) return; // Arrêter le scan si déjà scanné
-
-                final List<Barcode> barcodes = capture.barcodes;
-                for (final barcode in barcodes) {
-                  final String? code = barcode.rawValue;
-                  if (_isVCard(code)) {
-                    setState(() {
-                      scanResult = code ?? "Aucune valeur";
+          MobileScanner(
+            onDetect: (BarcodeCapture capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              for (final barcode in barcodes) {
+                final String? code = barcode.rawValue;
+                if (_isVCard(code)) {
+                  setState(() {
+                    scanResult = code ?? "Aucune valeur";
+                    _hasScanned = true;
+                  });
+                  _showResultDialog("vCard scannée : $scanResult");
+                  
+                } else {
+                  setState(() {
                       _hasScanned = true; // Arrêter le scan après la première détection
                     });
-                    _showResultDialog("vCard scannée : $scanResult");
-                  } else {
-                    setState(() {
-                      _hasScanned = true; // Arrêter le scan après la première détection
-                    });
-                    _showResultDialogError("Erreur : Ce n'est pas une vCard.");
-                  }
+                  _showResultDialogError("Erreur : Ce n'est pas une vCard.");
+                  
                 }
-              },
-            ),
+              }
+            },
+          ),
           
           Align(
             alignment: Alignment.bottomCenter,
