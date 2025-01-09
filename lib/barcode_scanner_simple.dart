@@ -14,9 +14,6 @@ bool _isVCard(String? code) {
   return code != null && code.startsWith('BEGIN:VCARD');
 }
 
-
-
-
 class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
   Barcode? _barcode;
   String scanResult = '';
@@ -58,9 +55,6 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
             TextButton(
               child: const Text('OK'),
               onPressed: () {
-                setState(() {
-                  _hasScanned = false;  // Réinitialiser l'état pour relancer le scan
-                });
                 Navigator.of(context).pop();
               },
             ),
@@ -81,9 +75,6 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
             TextButton(
               child: const Text('OK'),
               onPressed: () {
-                setState(() {
-                  _hasScanned = false;  // Réinitialiser l'état pour relancer le scan
-                });
                 Navigator.of(context).pop();  // Fermer la boîte de dialogue
               },
             ),
@@ -154,6 +145,8 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
       ),
     );
   }
-}  
+}    
                   
+
+                
 
