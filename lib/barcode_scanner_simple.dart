@@ -63,6 +63,35 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
     );
   }
 
+   void _showResultDialogError(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Scan Error'),  // Titre de la boîte de dialogue
+          content: Text(message),  // Affichage du message d'erreur
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();  // Fermer la boîte de dialogue
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _showErrorDialog(MobileScannerException error) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return ScannerErrorWidget(error: error);  // Pass the exception
+      },
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -83,13 +112,12 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
                   _showResultDialog("vCard scannée : $scanResult");
                 } else {
                   // Si ce n'est pas une vCard, affiche un message d'erreur
-                  showDialog(context: context, builder: (context) => ScannerErrorWidget(error: MobileScannerException(errorCode: MobileScannerErrorCode.vcard)));
-                  }
+                  _showResultDialogError("Erreur : Ce n'est pas une vCard.");
                 }
-
-                }
-              
+              }
+            },
           ),
+          
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
