@@ -1,14 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_hackathon/mobile_scanner_overlay.dart';
+import 'package:flutter_hackathon/barcode_scanner_simple.dart';
+import 'package:flutter_hackathon/barcode_label.dart';
 //import 'package:flutter_hackathon/mobile_scanner_overlay.dart';
 
 
 void main() {
   runApp(
     const MaterialApp(
-      title: 'Mobile Scanner test',
+      title: 'Mobile Scanner Example',
       home: MyHome(),
-      debugShowCheckedModeBanner: false,
     ),
   );
 }
@@ -37,14 +38,14 @@ class MyHome extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mobile Scanner test')),
+      appBar: AppBar(title: const Text('Mobile Scanner Example')),
       body: Center(
         child: ListView(
           children: [
             _buildItem(
               context,
-              'MobileScanner ',
-              const BarcodeScannerWithOverlay(),
+              'MobileScanner Simple',
+              const BarcodeScannerSimple(),
             ),
           ],
         ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
+import 'package:flutter_hackathon/scanner_error_widget.dart';
 
 class BarcodeScannerSimple extends StatefulWidget {
   const BarcodeScannerSimple({super.key});
@@ -8,8 +9,15 @@ class BarcodeScannerSimple extends StatefulWidget {
   State<BarcodeScannerSimple> createState() => _BarcodeScannerSimpleState();
 }
 
+bool _isVCard(String? code) {
+  // Vérifie si le code commence par BEGIN:VCARD
+  return code != null && code.startsWith('BEGIN:VCARD');
+}
+
 class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
   Barcode? _barcode;
+  String scanResult = '';
+  String error ='';
 
   Widget _buildBarcode(Barcode? value) {
     if (value == null) {
@@ -19,7 +27,6 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
         style: TextStyle(color: Colors.white),
       );
     }
-
 
     return Text(
       value.displayValue ?? 'No display value.',
@@ -36,6 +43,27 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
     }
   }
 
+  void _showResultDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Scan Result'),
+          content: Text(message),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('OK'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -44,7 +72,23 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
       body: Stack(
         children: [
           MobileScanner(
-            onDetect: _handleBarcode,
+            onDetect: (BarcodeCapture capture) {
+              final List<Barcode> barcodes = capture.barcodes;
+              for (final barcode in barcodes) {
+                final String? code = barcode.rawValue;
+                if (_isVCard(code)) {
+                  setState(() {
+                    scanResult = code ?? "Aucune valeur";
+                  });
+                  _showResultDialog("vCard scannée : $scanResult");
+                } else {
+                  // Si ce n'est pas une vCard, affiche un message d'erreur
+                  showDialog(context: context, builder: (context) => ScannerErrorWidget(error: MobileScannerException(errorCode: MobileScannerErrorCode.vcard)));
+                  }
+                }
+
+                }
+              
           ),
           Align(
             alignment: Alignment.bottomCenter,
