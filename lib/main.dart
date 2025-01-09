@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_hackathon/mobile_scanner_overlay.dart';
+//import 'package:flutter_hackathon/mobile_scanner_overlay.dart';
 import 'package:flutter_hackathon/barcode_scanner_simple.dart';
-import 'package:flutter_hackathon/barcode_label.dart';
+//import 'package:flutter_hackathon/barcode_label.dart';
 //import 'package:flutter_hackathon/mobile_scanner_overlay.dart';
 
 
