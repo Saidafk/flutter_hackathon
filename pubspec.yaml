@@ -38,7 +38,7 @@ dependencies:
   http: ^1.2.2
   mobile_scanner: ^6.0.2
   image_picker: ^1.0.4
-
+  csv: ^5.0.0
 dev_dependencies:
   flutter_test:
     sdk: flutter

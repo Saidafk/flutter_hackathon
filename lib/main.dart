@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_hackathon/barcode_scanner_simple.dart';
 //import 'package:flutter_hackathon/barcode_label.dart';
 //import 'package:flutter_hackathon/mobile_scanner_overlay.dart';
+import 'package:flutter_hackathon/vcard_details_page.dart';
 
 
 void main() {
@@ -46,6 +47,12 @@ class MyHome extends StatelessWidget {
               context,
               'MobileScanner Simple',
               const BarcodeScannerSimple(),
+            ),
+            
+            _buildItem(
+              context,
+              'Liste de tous les député',
+              const VCardDetailsPage(vCardContent: '',),
             ),
           ],
         ),
