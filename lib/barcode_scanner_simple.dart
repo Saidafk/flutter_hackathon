@@ -58,6 +58,9 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
             TextButton(
               child: const Text('OK'),
               onPressed: () {
+                setState(() {
+                  _hasScanned = false;  // Réinitialiser l'état pour relancer le scan
+                });
                 Navigator.of(context).pop();
               },
             ),
@@ -78,6 +81,9 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
             TextButton(
               child: const Text('OK'),
               onPressed: () {
+                setState(() {
+                  _hasScanned = false;  // Réinitialiser l'état pour relancer le scan
+                });
                 Navigator.of(context).pop();  // Fermer la boîte de dialogue
               },
             ),
@@ -108,6 +114,7 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
         children: [
           MobileScanner(
             onDetect: (BarcodeCapture capture) {
+              if (_hasScanned) return;
               final List<Barcode> barcodes = capture.barcodes;
               for (final barcode in barcodes) {
                 final String? code = barcode.rawValue;
@@ -147,4 +154,6 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
       ),
     );
   }
-}
+}  
+                  
+
