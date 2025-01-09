@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 import 'package:flutter_hackathon/scanner_error_widget.dart';
+import 'package:flutter/services.dart' show rootBundle;
+import 'package:csv/csv.dart';
 
 class BarcodeScannerSimple extends StatefulWidget {
   const BarcodeScannerSimple({super.key});
@@ -10,51 +12,68 @@ class BarcodeScannerSimple extends StatefulWidget {
 }
 
 bool _isVCard(String? code) {
-  // Vérifie si le code commence par BEGIN:VCARD
   return code != null && code.startsWith('BEGIN:VCARD');
+}
+
+// Extrait le prénom et nom de la vCard
+Map<String, String>? extractNameFromVCard(String vcard) {
+  String? firstName;
+  String? lastName;
+  
+  final lines = vcard.split('\n');
+  for (var line in lines) {
+    if (line.startsWith('N:')) {
+      final parts = line.substring(2).split(';');
+      if (parts.length >= 2) {
+        lastName = parts[0].trim();
+        firstName = parts[1].trim();
+        return {
+          'firstName': firstName,
+          'lastName': lastName,
+        };
+      }
+    }
+  }
+  return null;
+}
+
+Future<List<List<dynamic>>> loadCSV() async {
+  try {
+    final data = await rootBundle.loadString('assets/depute.csv');
+    return const CsvToListConverter().convert(data);
+  } catch (e) {
+    debugPrint('Erreur lors de la lecture du CSV: $e');
+    return [];
+  }
 }
 
 class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
   Barcode? _barcode;
   String scanResult = '';
-  String error ='';
   bool _hasScanned = false;
 
   Widget _buildBarcode(Barcode? value) {
-    if (value == null) {
-      return const Text(
-        'Scan something!',
-        overflow: TextOverflow.fade,
-        style: TextStyle(color: Colors.white),
-      );
-    }
-
     return Text(
-      value.displayValue ?? 'No display value.',
+      value?.displayValue ?? 'Scan something!',
       overflow: TextOverflow.fade,
       style: const TextStyle(color: Colors.white),
     );
   }
 
-  void _handleBarcode(BarcodeCapture barcodes) {
-    if (mounted) {
-      setState(() {
-        _barcode = barcodes.barcodes.firstOrNull;
-      });
-    }
-  }
-
-  void _showResultDialog(String message) {
+  void _showResultDialog(String title, String message) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Scan Result'),
+          title: Text(title),
           content: Text(message),
           actions: <Widget>[
             TextButton(
               child: const Text('OK'),
               onPressed: () {
+                setState(() {
+                  _hasScanned = false;
+                });
                 Navigator.of(context).pop();
               },
             ),
@@ -64,69 +83,71 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
     );
   }
 
-   void _showResultDialogError(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: const Text('Scan Error'),  // Titre de la boîte de dialogue
-          content: Text(message),  // Affichage du message d'erreur
-          actions: <Widget>[
-            TextButton(
-              child: const Text('OK'),
-              onPressed: () {
-                Navigator.of(context).pop();  // Fermer la boîte de dialogue
-              },
-            ),
-          ],
+  Future<void> _verifyVCard(String vcard) async {
+    final nameInfo = extractNameFromVCard(vcard);
+    if (nameInfo == null) {
+      _showResultDialog('Erreur', 'Impossible d\'extraire le nom de la vCard');
+      return;
+    }
+
+    final csvData = await loadCSV();
+    bool found = false;
+
+    for (var row in csvData) {
+      if (row.length >= 3 && 
+          row[1].trim() == nameInfo['firstName'] && 
+          row[2].trim() == nameInfo['lastName']) {
+        found = true;
+        _showResultDialog(
+          'Succès',
+          'Correspondance trouvée pour ${nameInfo['firstName']} ${nameInfo['lastName']}'
         );
-      },
-    );
-  }
+        break;
+      }
+    }
 
-  void _showErrorDialog(MobileScannerException error) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return ScannerErrorWidget(error: error);  // Pass the exception
-      },
-    );
+    if (!found) {
+      _showResultDialog(
+        'Erreur',
+        'Aucune correspondance trouvée pour ${nameInfo['firstName']} ${nameInfo['lastName']}'
+      );
+    }
   }
-
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Scanner'),
+      appBar: AppBar(
+        title: const Text('Scanner'),
         backgroundColor: Colors.blueAccent,
       ),
       backgroundColor: Colors.black,
       body: Stack(
         children: [
           MobileScanner(
-            onDetect: (BarcodeCapture capture) {
+            onDetect: (BarcodeCapture capture) async {
               if (_hasScanned) return;
-              final List<Barcode> barcodes = capture.barcodes;
-              for (final barcode in barcodes) {
-                final String? code = barcode.rawValue;
-                if (_isVCard(code)) {
-                  setState(() {
-                    scanResult = code ?? "Aucune valeur";
-                    _hasScanned = true;
-                  });
-                  _showResultDialog("vCard scannée : $scanResult");
-                  
-                } else {
-                  setState(() {
-                      _hasScanned = true; // Arrêter le scan après la première détection
-                    });
-                  _showResultDialogError("Erreur : Ce n'est pas une vCard.");
-                  
-                }
+              
+              final barcode = capture.barcodes.firstOrNull;
+              final code = barcode?.rawValue;
+              
+              if (code == null) {
+                _showResultDialog('Erreur', 'Code scanné vide');
+                return;
+              }
+
+              setState(() {
+                _hasScanned = true;
+                _barcode = barcode;
+              });
+
+              if (_isVCard(code)) {
+                await _verifyVCard(code);
+              } else {
+                _showResultDialog('Erreur', 'Le code scanné n\'est pas une vCard');
               }
             },
           ),
-          
           Align(
             alignment: Alignment.bottomCenter,
             child: Container(
@@ -136,7 +157,11 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
-                  Expanded(child: Center(child: _buildBarcode(_barcode))),
+                  Expanded(
+                    child: Center(
+                      child: _buildBarcode(_barcode),
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -145,8 +170,4 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
       ),
     );
   }
-}    
-                  
-
-                
-
+}
