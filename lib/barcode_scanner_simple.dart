@@ -9,33 +9,25 @@ class BarcodeScannerSimple extends StatefulWidget {
   _BarcodeScannerSimpleState createState() => _BarcodeScannerSimpleState();
 }
 
+// Fonction pour vérifier si le code scanné est une vCard
 bool _isVCard(String? code) {
-  // Vérifie si le code commence par BEGIN:VCARD
   return code != null && code.startsWith('BEGIN:VCARD');
 }
 
 class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
-  Barcode? _barcode;
-  String scanResult = '';
-  String error = '';
-  bool _hasScanned = false;
+  Barcode? _barcode;  // Pour stocker le code scanné
+  String scanResult = '';  // Résultat du scan
+  bool _hasScanned = false;  // Flag pour éviter un double scan
 
+  // Fonction pour afficher le résultat du scan
   Widget _buildBarcode(Barcode? value) {
     if (value == null) {
-      return const Text(
-        'Scan something!',
-        overflow: TextOverflow.fade,
-        style: TextStyle(color: Colors.white),
-      );
+      return const Text('Scan something!', style: TextStyle(color: Colors.white));
     }
-
-    return Text(
-      value.displayValue ?? 'No display value.',
-      overflow: TextOverflow.fade,
-      style: const TextStyle(color: Colors.white),
-    );
+    return Text(value.displayValue ?? 'No display value.', style: const TextStyle(color: Colors.white));
   }
 
+  // Cette fonction est appelée à chaque scan détecté
   void _handleBarcode(BarcodeCapture barcodes) {
     if (mounted) {
       setState(() {
@@ -44,6 +36,7 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
     }
   }
 
+  // Affiche un dialogue avec le résultat du scan
   void _showResultDialog(String message) {
     showDialog(
       context: context,
@@ -57,7 +50,7 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
               onPressed: () {
                 Navigator.of(context).pop();
                 setState(() {
-                  _hasScanned = false;  
+                  _hasScanned = false;  // Réinitialisation de l'état après scan
                 });
               },
             ),
@@ -67,6 +60,7 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
     );
   }
 
+  // Affiche une erreur si ce n'est pas une vCard
   void _showResultDialogError(String message) {
     showDialog(
       context: context,
@@ -87,15 +81,6 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
     );
   }
 
-  void _showErrorDialog(MobileScannerException error) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return ScannerErrorWidget(error: error);  
-      },
-    );
-  }
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,21 +93,21 @@ class _BarcodeScannerSimpleState extends State<BarcodeScannerSimple> {
         children: [
           MobileScanner(
             onDetect: (BarcodeCapture capture) {
-              if (_hasScanned) return;  
+              if (_hasScanned) return;  // Evite un double scan
               final List<Barcode> barcodes = capture.barcodes;
               for (final barcode in barcodes) {
                 final String? code = barcode.rawValue;
                 if (_isVCard(code)) {
                   setState(() {
                     scanResult = code ?? "Aucune valeur";
-                    _hasScanned = true;
+                    _hasScanned = true;  // Marque que le scan est terminé
                   });
-                  _showResultDialog("vCard scannée : $scanResult");
+                  _showResultDialog("vCard scannée : $scanResult");  // Affiche le message de succès
                 } else {
                   setState(() {
-                    _hasScanned = true;  
+                    _hasScanned = true;
                   });
-                  _showResultDialogError("Erreur : Ce n'est pas une vCard.");
+                  _showResultDialogError("Erreur : Ce n'est pas une vCard.");  // Affiche un message d'erreur
                 }
               }
             },
